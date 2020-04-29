@@ -1,0 +1,98 @@
+{% extends 'coreapp/base.html' %}
+{% block title %} <title>{{ herb.scientific_name }}</title> {% endblock %}
+{% block content0 %}
+<div class="container" style="padding-top: 100px;">
+    <div class="row">
+        <div class="col-lg-2" style="background-color:lavender;">abc
+        </div>
+        <div class="col-lg-1" style="background-color:lavender;">
+        </div>
+        <div class="col-lg-9" style="background-color:SeaGreen;">
+            <p class="head"><strong>Identifers</strong></p>
+            <div class="thumbnail">
+                <p><strong>Scientific Name: </strong>{{ herb.scientific_name }}</p>
+			   	<p><strong>Familia: </strong>{{ herb.familia }}</p>
+			   	<p><strong>Vietnamese Name: </strong>{{ herb.vietnamese_name }}</p>
+			   	<p><strong>Vietnamese Synonyms: </strong>{{ herb.vietnamese_synonyms }}</p>
+            </div>
+
+            <p class="head"><strong>Images</strong></p>
+            <div class="thumbnail">
+                <div>
+   				<img class="herb_image" src="{{ herb.image0 }}">
+   				<img class="herb_image" src="{{ herb.image1 }}" >
+   				<img class="herb_image" src="{{ herb.image2 }}" >
+   				<img class="herb_image" src="{{ herb.image3 }}" >
+   		        </div>
+                Reference: GBIF Backbone Taxonomy. Images accessed at
+                <a href="{{ herb.image_ref }}" target="_blank">{{ herb.image_ref }}</a> on
+                {{ herb.time }}
+            </div>
+
+            <p class="head"><strong>Morphology</strong></p>
+            <div class="thumbnail">
+                <p></p><strong>Thân: </strong>{{herb.stem}}</p>
+                <p></p><strong>Rễ: </strong>{{herb.root}}</p>
+                <p></p><strong>Lá: </strong>{{herb.leaf}}</p>
+                <p></p><strong>Hoa: </strong>{{herb.flower}}</p>
+                <p></p><strong>Quả: </strong>{{herb.fruit}}</p>
+            </div>
+
+            <p class="head"><strong>Related Compounds</strong></p>
+            <div class="thumbnail">
+                <table class="display compact cell-border">
+                <thead>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 5%;">ID</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 50%;">IUPAC Name</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 20%;">Synonym</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 25%;">Structure</th>
+                </thead>
+                <tbody>
+                {% if herb %}
+                {% for item in herb.compound_set.all %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td><a href="{% url 'detailcompound' item.id %}">{{ item.iupac_name|safe }}</a></td>
+                    <td>{{ item.synonym }}</td>
+                    <td><img src="{{ item.structure }}" style="width: 200px; height: 200px; display: inline-block;"></td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+                </table>
+            </div>
+
+            <p class="head"><strong>Related Targets</strong></p>
+            <div class="thumbnail">
+                <table class="display compact cell-border">
+                <thead>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 5%;">ID</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 65%;">Protein Name</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 15%;">Gene Name</th>
+                <th style="text-align: center;color: #777; font-weight: bold; width: 15%;">UniProt Code</th>
+                </thead>
+                <tbody>
+                {% if herb %}
+                {% for item in herb.target_set.all %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td><a href="{% url 'detailtarget' item.id %}">{{ item.protein_name }}</a></td>
+                    <td>{{ item.gene_name }}</td>
+                    <td>{{ item.uniprot_code }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% if herb %}
+<ul>
+{% for item in herb.compound_set.all %}
+<li>{{ item.synonym }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+</div>
+{% endblock %}

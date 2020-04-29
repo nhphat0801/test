@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block title %}{% endblock %}
+    {% block specified %}{% endblock %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <script type="text/javascript" src="http://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'coreapp/style.css' %}" type="text/css">
+</head>
+<body>
+<nav class="navbar navbar-default navbar-fixed-top" style="background-color: #006400;">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="http://localhost/vhm_site/">
+        <img src="https://upload.wikimedia.org/wikipedia/vi/c/cd/Logo-hcmut.svg" width="80" height="80">
+      </a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li><a href="{% url 'index' %}" style="color: White;">Home</a></li>
+      <li><a href="{% url 'herbview' %}" style="color: White;">Herb</a></li>
+      <li><a href="{% url 'compoundview' %}" style="color: White;">Compound</a></li>
+      <li><a href="{% url 'diseaseview' %}" style="color: White;">Disease</a></li>
+      <li><a href="{% url 'targetview' %}" style="color: White;">Target</a></li>
+        <li><a href="{% url 'querycansmiles' %}" style="color: White;">Search</a></li>
+    </ul>
+  </div>
+</nav>
+{% block content0 %}
+{% endblock %}
+<script type="text/javascript">
+$(document).ready(function(){
+	$('.myInput').hide();
+});
+$(document).ready(function(){
+    $('table.display').DataTable();
+});
+</script>
+</body>
+</html>

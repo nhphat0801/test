@@ -1,0 +1,24 @@
+{% extends 'coreapp/base.html' %}
+{% block title %} <title>Targets</title> {% endblock %}
+{% block content0 %}
+<div class="container" style="padding-top: 100px;">
+<table class="display compact cell-border">
+    <thead>
+        <th style="text-align: center;color: #777; font-weight: bold; width: 5%;">ID</th>
+		<th style="text-align: center;color: #777; font-weight: bold; width: 50%;">Protein Name</th>
+		<th style="text-align: center;color: #777; font-weight: bold; width: 25%;">Gene Name</th>
+		<th style="text-align: center;color: #777; font-weight: bold; width: 20%;">Uniprot Code</th>
+    </thead>
+    <tbody>
+        {% for item in name %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td><a href="{% url 'detailtarget' item.id %}">{{ item.protein_name }}</a></td>
+            <td>{{item.gene_name}}</td>
+            <td>{{ item.uniprot_code }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

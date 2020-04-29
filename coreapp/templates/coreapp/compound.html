@@ -1,0 +1,615 @@
+{% extends 'coreapp/base.html' %}
+{% block title %} <title>Compounds</title> {% endblock %}
+{% block specified %}
+<script src="https://www.amcharts.com/lib/4/core.js"></script>
+<script src="https://www.amcharts.com/lib/4/charts.js"></script>
+<script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+<style>
+#chartdiv {
+  width: 25%;
+  height: 500px;
+}
+</style>
+{% endblock %}
+{% block content0 %}
+{% load static %}
+<div class="container" style="padding-top: 100px;">
+<table class="display compact cell-border">
+    <thead>
+        <th style="text-align: center;color: #777; font-weight: bold; width: 3%;">ID</th>
+        <th style="text-align: center;color: #777; font-weight: bold; width: 50%;">IUPAC Name</th>
+		<th style="text-align: center;color: #777; font-weight: bold; width: 20%;">Synonym</th>
+        <th style="text-align: center;color: #777; font-weight: bold; width: 7%;">Formula</th>
+		<th style="text-align: center;color: #777; font-weight: bold; width: 20%;">Structure</th>
+    </thead>
+    <tbody>
+        {% for item in name %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td><a href="{% url 'detailcompound' item.id %}">{{ item.iupac_name|safe }}</a></td>
+            <td>{{item.synonym}}</td>
+            <td>{{ item.formula|safe }}</td>
+            <td><img src='{{item.structure}}' style='width: 225px; height: 225px; display: inline-block;'></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    <div style="float: left;width: 100%;height: 50px;background: #87CEFA;text-align: center;font-size: 30px;"><b>
+       Distribution Charts of Compound Properties</b></div>
+    <div id="chartdiv1" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+    <div id="chartdiv2" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+    <div id="chartdiv3" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+    <div id="chartdiv4" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+    <div id="chartdiv5" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+    <div id="chartdiv6" style="float: left;width: 33.33%;height: 500px;background: #87CEFA;"></div>
+</div>
+<script>
+var list_draw = {{ my_data }} ;
+/*var arr_mwt_fixed = [];
+for (var i=0; i<list_mwt.length; i++){
+    var item = list_mwt[i].toFixed(3);
+    arr_mwt_fixed.push(Number(item));
+}*/
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart = am4core.create("chartdiv1", am4charts.XYChart);
+//chart.paddingRight = 100;
+
+//chart.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis.renderer.minGridDistance = 30;
+categoryAxis.renderer.grid.template.location = 0;
+categoryAxis.title.text = "Molcular Weight Distribution";
+categoryAxis.dataFields.category = "category";
+
+var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+valueAxis.tooltip.disabled = true;
+valueAxis.title.text = "Molcular Weight (g/mol)";
+valueAxis.renderer.minGridDistance = 25;
+
+var series = chart.series.push(new am4charts.CandlestickSeries());
+series.dataFields.categoryX = "category";
+series.dataFields.valueY = "close";
+series.dataFields.openValueY = "open";
+series.dataFields.lowValueY = "low";
+series.dataFields.highValueY = "high";
+series.simplifiedProcessing = true;
+series.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series.riseFromOpenState = undefined;
+series.dropFromOpenState = undefined;
+series.fill = am4core.color("#7FFFD4");
+series.strokeWidth = 2;
+series.stroke = am4core.color("#000000");
+
+chart.cursor = new am4charts.XYCursor();
+
+var medianaSeries = chart.series.push(new am4charts.StepLineSeries());
+medianaSeries.noRisers = true;
+medianaSeries.startLocation = 0.1;
+medianaSeries.endLocation = 0.9;
+medianaSeries.dataFields.valueY = "mediana";
+medianaSeries.dataFields.categoryX = "category";
+medianaSeries.strokeWidth = 2;
+medianaSeries.stroke = am4core.color("#000000");
+
+
+var topSeries = chart.series.push(new am4charts.StepLineSeries());
+topSeries.noRisers = true;
+topSeries.startLocation = 0.3;
+topSeries.endLocation = 0.7;
+topSeries.dataFields.valueY = "high";
+topSeries.dataFields.categoryX = "category";
+topSeries.stroke = chart.colors.getIndex(0);
+topSeries.strokeWidth = 2;
+topSeries.stroke = am4core.color("#000000")
+
+var bottomSeries = chart.series.push(new am4charts.StepLineSeries());
+bottomSeries.noRisers = true;
+bottomSeries.startLocation = 0.3;
+bottomSeries.endLocation = 0.7;
+bottomSeries.dataFields.valueY = "low";
+bottomSeries.dataFields.categoryX = "category";
+bottomSeries.stroke = chart.colors.getIndex(0);
+bottomSeries.strokeWidth = 2;
+bottomSeries.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart.data = [{
+    "category": "",
+    "open": list_draw[1],
+    "high": list_draw[4],
+    "low": list_draw[0],
+    "close": list_draw[3],
+    "mediana": list_draw[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+
+<script>
+var list_draw1 = {{ logp_data }} ;
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart1 = am4core.create("chartdiv2", am4charts.XYChart);
+//chart1.paddingRight = 100;
+
+//chart1.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis1 = chart1.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis1.renderer.minGridDistance = 30;
+categoryAxis1.renderer.grid.template.location = 0;
+categoryAxis1.title.text = "Partition Coefficient Distribution";
+categoryAxis1.dataFields.category = "category";
+
+var valueAxis1 = chart1.yAxes.push(new am4charts.ValueAxis());
+valueAxis1.tooltip.disabled = true;
+valueAxis1.title.text = "LogP";
+
+var series1 = chart1.series.push(new am4charts.CandlestickSeries());
+series1.dataFields.categoryX = "category";
+series1.dataFields.valueY = "close";
+series1.dataFields.openValueY = "open";
+series1.dataFields.lowValueY = "low";
+series1.dataFields.highValueY = "high";
+series1.simplifiedProcessing = true;
+series1.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series1.riseFromOpenState = undefined;
+series1.dropFromOpenState = undefined;
+series1.fill = am4core.color("#7FFFD4");
+series1.strokeWidth = 2;
+series1.stroke = am4core.color("#000000");
+
+chart1.cursor = new am4charts.XYCursor();
+
+var medianaSeries1 = chart1.series.push(new am4charts.StepLineSeries());
+medianaSeries1.noRisers = true;
+medianaSeries1.startLocation = 0.1;
+medianaSeries1.endLocation = 0.9;
+medianaSeries1.dataFields.valueY = "mediana";
+medianaSeries1.dataFields.categoryX = "category";
+medianaSeries1.strokeWidth = 2;
+medianaSeries1.stroke = am4core.color("#000000");
+
+
+var topSeries1 = chart1.series.push(new am4charts.StepLineSeries());
+topSeries1.noRisers = true;
+topSeries1.startLocation = 0.3;
+topSeries1.endLocation = 0.7;
+topSeries1.dataFields.valueY = "high";
+topSeries1.dataFields.categoryX = "category";
+topSeries1.stroke = chart1.colors.getIndex(0);
+topSeries1.strokeWidth = 2;
+topSeries1.stroke = am4core.color("#000000")
+
+var bottomSeries1 = chart1.series.push(new am4charts.StepLineSeries());
+bottomSeries1.noRisers = true;
+bottomSeries1.startLocation = 0.3;
+bottomSeries1.endLocation = 0.7;
+bottomSeries1.dataFields.valueY = "low";
+bottomSeries1.dataFields.categoryX = "category";
+bottomSeries1.stroke = chart1.colors.getIndex(0);
+bottomSeries1.strokeWidth = 2;
+bottomSeries1.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart1.data = [{
+    "category": "",
+    "open": list_draw1[1],
+    "high": list_draw1[4],
+    "low": list_draw1[0],
+    "close": list_draw1[3],
+    "mediana": list_draw1[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+
+<script>
+var list_draw2 = {{ tpsa_data }} ;
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart2 = am4core.create("chartdiv3", am4charts.XYChart);
+//chart1.paddingRight = 100;
+
+//chart1.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis2 = chart2.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis2.renderer.minGridDistance = 30;
+categoryAxis2.renderer.grid.template.location = 0;
+categoryAxis2.title.text = "Topological Polar Surface Area Distribution";
+categoryAxis2.dataFields.category = "category";
+
+var valueAxis2 = chart2.yAxes.push(new am4charts.ValueAxis());
+valueAxis2.tooltip.disabled = true;
+valueAxis2.title.text = "TPSA (Å²)";
+
+var series2 = chart2.series.push(new am4charts.CandlestickSeries());
+series2.dataFields.categoryX = "category";
+series2.dataFields.valueY = "close";
+series2.dataFields.openValueY = "open";
+series2.dataFields.lowValueY = "low";
+series2.dataFields.highValueY = "high";
+series2.simplifiedProcessing = true;
+series2.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series2.riseFromOpenState = undefined;
+series2.dropFromOpenState = undefined;
+series2.fill = am4core.color("#7FFFD4");
+series2.strokeWidth = 2;
+series2.stroke = am4core.color("#000000");
+
+chart2.cursor = new am4charts.XYCursor();
+
+var medianaSeries2 = chart2.series.push(new am4charts.StepLineSeries());
+medianaSeries2.noRisers = true;
+medianaSeries2.startLocation = 0.1;
+medianaSeries2.endLocation = 0.9;
+medianaSeries2.dataFields.valueY = "mediana";
+medianaSeries2.dataFields.categoryX = "category";
+medianaSeries2.strokeWidth = 2;
+medianaSeries2.stroke = am4core.color("#000000");
+
+
+var topSeries2 = chart2.series.push(new am4charts.StepLineSeries());
+topSeries2.noRisers = true;
+topSeries2.startLocation = 0.3;
+topSeries2.endLocation = 0.7;
+topSeries2.dataFields.valueY = "high";
+topSeries2.dataFields.categoryX = "category";
+topSeries2.stroke = chart2.colors.getIndex(0);
+topSeries2.strokeWidth = 2;
+topSeries2.stroke = am4core.color("#000000")
+
+var bottomSeries2 = chart2.series.push(new am4charts.StepLineSeries());
+bottomSeries2.noRisers = true;
+bottomSeries2.startLocation = 0.3;
+bottomSeries2.endLocation = 0.7;
+bottomSeries2.dataFields.valueY = "low";
+bottomSeries2.dataFields.categoryX = "category";
+bottomSeries2.stroke = chart2.colors.getIndex(0);
+bottomSeries2.strokeWidth = 2;
+bottomSeries2.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart2.data = [{
+    "category": "",
+    "open": list_draw2[1],
+    "high": list_draw2[4],
+    "low": list_draw2[0],
+    "close": list_draw2[3],
+    "mediana": list_draw2[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+
+<script>
+var list_draw3 = {{ hacc_data }} ;
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart3 = am4core.create("chartdiv4", am4charts.XYChart);
+//chart1.paddingRight = 100;
+
+//chart1.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis3 = chart3.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis3.renderer.minGridDistance = 30;
+categoryAxis3.renderer.grid.template.location = 0;
+categoryAxis3.title.text = "Hydrogen Bond Acceptor Count Distribution";
+categoryAxis3.dataFields.category = "category";
+
+var valueAxis3 = chart3.yAxes.push(new am4charts.ValueAxis());
+valueAxis3.tooltip.disabled = true;
+valueAxis3.title.text = "Hydrogen Bond Acceptor Count";
+
+var series3 = chart3.series.push(new am4charts.CandlestickSeries());
+series3.dataFields.categoryX = "category";
+series3.dataFields.valueY = "close";
+series3.dataFields.openValueY = "open";
+series3.dataFields.lowValueY = "low";
+series3.dataFields.highValueY = "high";
+series3.simplifiedProcessing = true;
+series3.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series3.riseFromOpenState = undefined;
+series3.dropFromOpenState = undefined;
+series3.fill = am4core.color("#7FFFD4");
+series3.strokeWidth = 2;
+series3.stroke = am4core.color("#000000");
+
+chart3.cursor = new am4charts.XYCursor();
+
+var medianaSeries3 = chart3.series.push(new am4charts.StepLineSeries());
+medianaSeries3.noRisers = true;
+medianaSeries3.startLocation = 0.1;
+medianaSeries3.endLocation = 0.9;
+medianaSeries3.dataFields.valueY = "mediana";
+medianaSeries3.dataFields.categoryX = "category";
+medianaSeries3.strokeWidth = 2;
+medianaSeries3.stroke = am4core.color("#000000");
+
+
+var topSeries3 = chart3.series.push(new am4charts.StepLineSeries());
+topSeries3.noRisers = true;
+topSeries3.startLocation = 0.3;
+topSeries3.endLocation = 0.7;
+topSeries3.dataFields.valueY = "high";
+topSeries3.dataFields.categoryX = "category";
+topSeries3.stroke = chart3.colors.getIndex(0);
+topSeries3.strokeWidth = 2;
+topSeries3.stroke = am4core.color("#000000")
+
+var bottomSeries3 = chart3.series.push(new am4charts.StepLineSeries());
+bottomSeries3.noRisers = true;
+bottomSeries3.startLocation = 0.3;
+bottomSeries3.endLocation = 0.7;
+bottomSeries3.dataFields.valueY = "low";
+bottomSeries3.dataFields.categoryX = "category";
+bottomSeries3.stroke = chart3.colors.getIndex(0);
+bottomSeries3.strokeWidth = 2;
+bottomSeries3.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart3.data = [{
+    "category": "",
+    "open": list_draw3[1],
+    "high": list_draw3[4],
+    "low": list_draw3[0],
+    "close": list_draw3[3],
+    "mediana": list_draw3[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+
+<script>
+var list_draw4 = {{ hdon_data }} ;
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart4 = am4core.create("chartdiv5", am4charts.XYChart);
+//chart1.paddingRight = 100;
+
+//chart1.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis4 = chart4.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis4.renderer.minGridDistance = 30;
+categoryAxis4.renderer.grid.template.location = 0;
+categoryAxis4.title.text = "Hydrogen Bond Donor Count Distribution";
+categoryAxis4.dataFields.category = "category";
+
+var valueAxis4 = chart4.yAxes.push(new am4charts.ValueAxis());
+valueAxis4.tooltip.disabled = true;
+valueAxis4.title.text = "Hydrogen Bond Donor Count";
+
+var series4 = chart4.series.push(new am4charts.CandlestickSeries());
+series4.dataFields.categoryX = "category";
+series4.dataFields.valueY = "close";
+series4.dataFields.openValueY = "open";
+series4.dataFields.lowValueY = "low";
+series4.dataFields.highValueY = "high";
+series4.simplifiedProcessing = true;
+series4.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series4.riseFromOpenState = undefined;
+series4.dropFromOpenState = undefined;
+series4.fill = am4core.color("#7FFFD4");
+series4.strokeWidth = 2;
+series4.stroke = am4core.color("#000000");
+
+chart4.cursor = new am4charts.XYCursor();
+
+var medianaseries4 = chart4.series.push(new am4charts.StepLineSeries());
+medianaseries4.noRisers = true;
+medianaseries4.startLocation = 0.1;
+medianaseries4.endLocation = 0.9;
+medianaseries4.dataFields.valueY = "mediana";
+medianaseries4.dataFields.categoryX = "category";
+medianaseries4.strokeWidth = 2;
+medianaseries4.stroke = am4core.color("#000000");
+
+
+var topseries4 = chart4.series.push(new am4charts.StepLineSeries());
+topseries4.noRisers = true;
+topseries4.startLocation = 0.3;
+topseries4.endLocation = 0.7;
+topseries4.dataFields.valueY = "high";
+topseries4.dataFields.categoryX = "category";
+topseries4.stroke = chart4.colors.getIndex(0);
+topseries4.strokeWidth = 2;
+topseries4.stroke = am4core.color("#000000")
+
+var bottomseries4 = chart4.series.push(new am4charts.StepLineSeries());
+bottomseries4.noRisers = true;
+bottomseries4.startLocation = 0.3;
+bottomseries4.endLocation = 0.7;
+bottomseries4.dataFields.valueY = "low";
+bottomseries4.dataFields.categoryX = "category";
+bottomseries4.stroke = chart4.colors.getIndex(0);
+bottomseries4.strokeWidth = 2;
+bottomseries4.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart4.data = [{
+    "category": "",
+    "open": list_draw4[1],
+    "high": list_draw4[4],
+    "low": list_draw4[0],
+    "close": list_draw4[3],
+    "mediana": list_draw4[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+
+<script>
+var list_draw5 = {{ hrot_data }} ;
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart5 = am4core.create("chartdiv6", am4charts.XYChart);
+//chart1.paddingRight = 100;
+
+//chart1.dateFormatter.inputDateFormat = "yyyy-MM-dd";
+
+var categoryAxis5 = chart5.xAxes.push(new am4charts.CategoryAxis());
+categoryAxis5.renderer.minGridDistance = 30;
+categoryAxis5.renderer.grid.template.location = 0;
+categoryAxis5.title.text = "Rotatable Bond Count Distribution";
+categoryAxis5.dataFields.category = "category";
+
+var valueAxis5 = chart5.yAxes.push(new am4charts.ValueAxis());
+valueAxis5.tooltip.disabled = true;
+valueAxis5.title.text = "Rotatable Bond Count";
+
+var series5 = chart5.series.push(new am4charts.CandlestickSeries());
+series5.dataFields.categoryX = "category";
+series5.dataFields.valueY = "close";
+series5.dataFields.openValueY = "open";
+series5.dataFields.lowValueY = "low";
+series5.dataFields.highValueY = "high";
+series5.simplifiedProcessing = true;
+series5.tooltipText = "High: {highValueY.value}\nQ3: {valueY.value}\nMedian: {mediana}\nQ1: {openValueY.value}\nLow: {lowValueY.value}";
+series5.riseFromOpenState = undefined;
+series5.dropFromOpenState = undefined;
+series5.fill = am4core.color("#7FFFD4");
+series5.strokeWidth = 2;
+series5.stroke = am4core.color("#000000");
+
+chart5.cursor = new am4charts.XYCursor();
+
+var medianaseries5 = chart5.series.push(new am4charts.StepLineSeries());
+medianaseries5.noRisers = true;
+medianaseries5.startLocation = 0.1;
+medianaseries5.endLocation = 0.9;
+medianaseries5.dataFields.valueY = "mediana";
+medianaseries5.dataFields.categoryX = "category";
+medianaseries5.strokeWidth = 2;
+medianaseries5.stroke = am4core.color("#000000");
+
+
+var topseries5 = chart5.series.push(new am4charts.StepLineSeries());
+topseries5.noRisers = true;
+topseries5.startLocation = 0.3;
+topseries5.endLocation = 0.7;
+topseries5.dataFields.valueY = "high";
+topseries5.dataFields.categoryX = "category";
+topseries5.stroke = chart5.colors.getIndex(0);
+topseries5.strokeWidth = 2;
+topseries5.stroke = am4core.color("#000000")
+
+var bottomseries5 = chart5.series.push(new am4charts.StepLineSeries());
+bottomseries5.noRisers = true;
+bottomseries5.startLocation = 0.3;
+bottomseries5.endLocation = 0.7;
+bottomseries5.dataFields.valueY = "low";
+bottomseries5.dataFields.categoryX = "category";
+bottomseries5.stroke = chart5.colors.getIndex(0);
+bottomseries5.strokeWidth = 2;
+bottomseries5.stroke = am4core.color("#000000")
+
+
+//chart.scrollbarX = new am4core.Scrollbar();
+
+chart5.data = [{
+    "category": "",
+    "open": list_draw5[1],
+    "high": list_draw5[4],
+    "low": list_draw5[0],
+    "close": list_draw5[3],
+    "mediana": list_draw5[2]
+  }];
+
+  /*addMediana();
+
+  function addMediana(){
+  	for(var i = 0; i < chart.data.length; i++){
+  		var dataItem = chart.data[0];
+  		dataItem.mediana = Number(dataItem.low) + (Number(dataItem.high) - Number(dataItem.low)) / 2;
+  	}
+  }*/
+
+}); // end am4core.ready()
+</script>
+{% endblock %}
